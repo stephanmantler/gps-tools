@@ -301,11 +301,11 @@
                 map = L.map('map').setView([lat, lon], 13)
                 var lmi = L.tileLayer('https://maps.stepman.is/cache/wmts/LMI_DEM/webmercator/{z}/{x}/{y}.jpeg', {
                     maxZoom: 19,
-                    attribution: '&copy; <a href="http://www.lmi/copyright">Landmælingar Íslands</a>'
+                    attribution: '&copy; <a href="http://www.lmi.is">Landmælingar Íslands</a>'
                 })
                 var otm = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
                     maxZoom: 19,
-                    attribution: '&copy; <a href="http://www.lmi/copyright">Landmælingar Íslands</a>'
+                    attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org/">SRTM</a>; <a href="http://www.opentopomap.org/">OpenTopoMap</a>'
                 })
                 otm.addTo(map)
                 L.control.layers({"LMÍ Topo": lmi, "OpenTopoMap": otm}).addTo(map)
