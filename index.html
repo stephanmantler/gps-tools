@@ -119,6 +119,7 @@
                 <div class="gcs options">
                     <label for="showmis">Show possible misinterpretations</label><input style="float: right" id="showmis" checked type="checkbox">
                     <label for="center">Keep map centered on location</label><input style="float: right" id="center" checked type="checkbox">
+                    <a id="gpx-export" href="#" download="export.gpx">Export as GPX (testing)</a>
                 </div>
             </div>
             <div id="map"></div>
@@ -188,6 +189,7 @@
                     if( this.center ) {
                         map.panTo([lat, lon])
                     }
+                    updateExportMarkersLink()
                 },
                 updateMisMarkers: function() {
                     // ds is a digit stream of dms: ddmmss, reinterpreted as as dd mm.mm
@@ -292,6 +294,33 @@
                 }
             }
             
+            function makeWpt(marker, name, desc, sym) {
+                var latLng = marker.getLatLng()
+                var wpt = '<wpt lat="'+latLng.lat+'" lon="'+latLng.lng+'">'
+                if ( name ) { wpt = wpt + '<name>'+name+'</name>' }
+                if ( desc ) { wpt = wpt + '<desc>'+desc+'</desc>' }
+                if ( sym  ) { wpt = wpt + '<sym>' +sym+ '</sym>' }
+                wpt = wpt + '</wpt>'
+                return wpt
+            }
+            
+            function updateExportMarkersLink() {
+                var xml='<?xml version="1.0" encoding="UTF-8"?>'
+                xml = xml +'<gpx version="1.1" creator="https://tools.stepman.is/gps" '
+                xml = xml + ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'
+                xml = xml + ' xmlns="http://www.topografix.com/GPX/1/1"'
+                xml = xml + ' xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">'
+                xml = xml + makeWpt( posMarker, "Actual", "Position as entered" )
+                xml = xml + makeWpt( misMarkers.dmsddm, "DMS as DDM", "Position was given in DMS but entered as DDM" )
+                xml = xml + makeWpt( misMarkers.dmsdd, "DMS as DD", "Position was given in DMS but entered as DD" )
+                xml = xml + makeWpt( misMarkers.ddmdms, "DDM as DMS", "Position was given in DDM but entered as DMS" )
+                xml = xml + makeWpt( misMarkers.ddmdd, "DDM as DD", "Position was given in DDM but entered as DD" )
+                xml = xml + makeWpt( misMarkers.dddms, "DD as DMS", "Position was given in DD but entered as DMS" )
+                xml = xml + makeWpt( misMarkers.ddddm, "DD as DDM", "Position was given in DD but entered as DDM" )
+                xml = xml + '</gpx>'
+                
+                $("#gpx-export").attr("href", 'data:text/xml;charset=utf-8,' + encodeURIComponent(xml))
+            }
             
             function bootstrap(position) {
                 if( position ) {
