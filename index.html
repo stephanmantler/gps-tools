@@ -15,9 +15,21 @@
             }
             h1, h2, h3 { margin-block: 0; }
             h1 { font-size: 1.3em; }
-            #coords-calculator { border: 1px solid black; padding: 0.2em; }
-            div.gcs { display: inline-block; border: 1px solid grey; padding: 0.2em; width: 16em; }
+            #coords-calculator { border: 1px solid black; padding: 0.2em; display:flex; flex-flow: row wrap; }
+            div.gcs { display: inline-block; border: 1px solid grey; padding: 0.2em; min-width: 16em; }
+            span.tt { border: 1px solid grey; border-radius: .5em; padding: .1em; }
+            .ds { /* background-color: lightgray; */ }
+            .dd { /* background-color: lightcyan; */ }
+            .dms { /* background-color: lightgoldenrodyellow; */ }
+            .ddm { /* background-color: lightpink; */ }
             .gcs h2 { font-size: 1em; }
+            .gcs .value { 
+                float:right; 
+                display: inline-block;
+                width: 16em; 
+                text-align: right;
+                font-family: monospace; 
+            }
             #map { height: calc( 100vh - 40px); }
             body, header {
                 margin: 0;
@@ -59,6 +71,12 @@
                 border: none;
                 max-width: 100%;
             }
+            .conversions { font-size: smaller; margin-top: 1em; }
+            .gcs select { width: 4em; }
+            #ds input { width: 7em; }
+            #dms input { width: 5em; }
+            #ddm input { width: 6em; }
+            #dd input { width: 7em; }
             label.gcs {
                 width: 2em;
                 display: inline-block;
@@ -80,7 +98,17 @@
         </header>
         <div class="content">
             <div id="coords-calculator">
-                <div id="dms" class="gcs"><h2>Degrees / Minutes / Seconds</h2>
+                <div id="ds" class="ds gcs"><h2>Plain Numbers</h2>
+                <div><label class="gcs" for="plain-a">Lat:</label>
+                    <select id="ds-a"><option value="1">N</option><option value="-1">S</option></select>
+                    <input id="ds-a-nn" type="number" placeholder="ddddddd" />
+                </div>
+                <div><label class="gcs" for="dms-o">Lon:</label>
+                    <select id="ds-o"><option value="-1">W</option><option value="1">E</option></select>
+                    <input id="ds-o-nn" type="number" placeholder="ddddddd" />
+                </div>
+            </div>
+                <div id="dms" class="dms gcs"><h2><span class="tt">DMS</span> - Degrees / Minutes / Seconds</h2>
                     <div><label class="gcs" for="dms-a">Lat:</label>
                         <select id="dms-a"><option value="1">N</option><option value="-1">S</option></select>
                         <input id="dms-a-dd" type="number" placeholder="dd" min="0" max="90" />°
@@ -93,8 +121,12 @@
                         <input id="dms-o-mm" type="number" placeholder="mm" min="0" max="59" />'
                         <input id="dms-o-ss" type="number" placeholder="ss" min="0" max="59"  step="0.1" />"
                     </div>
+                    <div class="conversions">
+                        <div id="dms-to-ddm">.. as <span class="ddm">DDM</span>:<span class="value ddm"></span></div>
+                        <div id="dms-to-dd">.. as <span class="dd">DD</span>:<span class="value dd"></span></div>
+                    </div>
                 </div>
-                <div id="ddm" class="gcs"><h2>Degrees / Decimal Minutes</h2>
+                <div id="ddm" class="ddm gcs"><h2><span class="tt">DDM</span> - Degrees / Decimal Minutes</h2>
                     <div><label class="gcs" for="ddm-a">Lat:</label>
                         <select id="ddm-a"><option value="1">N</option><option value="-1">S</option></select>
                         <input id="ddm-a-dd" type="number" placeholder="dd" min="0" max="90" />°
@@ -105,8 +137,12 @@
                         <input id="ddm-o-dd" type="number" placeholder="dd" min="0" max="90" />°
                         <input id="ddm-o-mm" type="number" placeholder="mm.mmmm" min="0" max="59" step="0.001" />'
                     </div>
+                    <div class="conversions">
+                        <div id="ddm-to-dms">.. as <span class="dms">DMS</span>:<span class="dms value"></span></div>
+                        <div id="ddm-to-dd">.. as <span class="dd">DD</span>:<span class="dd value"></span></div>
+                    </div>
                 </div>
-                <div id="dd" class="gcs"><h2>Decimal Degrees</h2>
+                <div id="dd" class="dd gcs"><h2><span class="tt">DD</span> - Decimal Degrees</h2>
                     <div><label class="gcs" for="dd-a">Lat:</label>
                         <select id="dd-a"><option value="1">N</option><option value="-1">S</option></select>
                         <input id="dd-a-dd" type="number" placeholder="dd.ddddd" min="0" max="90" step="0.00001"/>°
@@ -115,23 +151,40 @@
                         <select id="dd-o"><option value="1">E</option><option value="-1">W</option></select>
                         <input id="dd-o-dd" type="number" placeholder="dd.ddddd" min="0" max="90" step="0.00001"/>°
                     </div>
+                    <div class="conversions">
+                        <div id="dd-to-dms">.. as <span class="dms">DMS</span>:<span class="dms value"></span></div>
+                        <div id="dd-to-ddm">.. as<span class="ddm"> DDM</span>:<span class="ddm value"></span></div>
+                    </div>
                 </div>
                 <div class="gcs options">
-                    <label for="showmis">Show possible misinterpretations</label><input style="float: right" id="showmis" checked type="checkbox">
-                    <label for="center">Keep map centered on location</label><input style="float: right" id="center" checked type="checkbox">
+                    <label for="center">Keep map focused on all possible locations</label><input style="float: right" id="center" checked type="checkbox"><br />
                     <a id="gpx-export" href="#" download="export.gpx">Export as GPX (testing)</a>
                 </div>
             </div>
             <div id="map"></div>
         </div>
         <script>
-            var lat = 64.0784
-            var lon = -16.2306
+            var dmsLat = 64.0784
+            var dmsLon = -16.2306
+            var ddmLat = 64.0784
+            var ddmLon = -16.2306
+            var ddLat = 64.0784
+            var ddLon = -16.2306
             var map = {}
-            var posMarker = {}
-            var misMarkers = { dmsdd: {}, dmsddm: {}, ddmdms: {}, ddmdd: {}, dddms: {}, ddddm: {} }
+            var markers = { dms: {}, ddm: {}, dd: {} }
+            var NS = { "-1": "S", "1":"N" }
+            var EW = { "-1": "W", "1":"E" }
 
             var parser = {
+                splitDStoDMS: function(ds) {
+                    return [ ds.substring(0,2), ds.substring(2,4), ds.substring(4,7) / 10 ]
+                },
+                splitDStoDDM: function(ds) {
+                    return [ ds.substring(0,2), ds.substring(2,7) / 1000 ]
+                },
+                splitDStoDD: function(ds) {
+                    return ds.substring(0,7) / 100000
+                },
                 dsdms: function(ds) {
                     return this.parsedms(ds.substring(0,2), ds.substring(2,4), ds.substring(4,7) / 10)
                 },
@@ -147,150 +200,206 @@
                 parseddm: function(d, m) {
                     return d * 1 + m / 60
                 },
-                dms: function() {
-                    console.log("parsing dms")
-                    lat = $("#dms-a").val() * this.parsedms( $("#dms-a-dd").val(), $("#dms-a-mm").val(), $("#dms-a-ss").val() )
-                    lon = $("#dms-o").val() * this.parsedms( $("#dms-o-dd").val(), $("#dms-o-mm").val(), $("#dms-o-ss").val() )
-                    console.log("->",lat,lon)
-                    updater.all()
+                parsedd: function(d) {
+                    return d * 1.0
                 },
-                ddm: function() {
-                    console.log("parsing ddm")
-                    lat = $("#ddm-a").val() * this.parseddm( $("#ddm-a-dd").val(), $("#ddm-a-mm").val() )
-                    lon = $("#ddm-o").val() * this.parseddm( $("#ddm-o-dd").val(), $("#ddm-o-mm").val() )
-                    console.log("->",lat,lon)
-                    updater.all()
+                makedms: function(d) {
+                    var sg = Math.sign(d)
+
+                    var ad = Math.abs(d)
+
+                    var dd = Math.trunc(ad)
+                    var mm = Math.trunc((ad-dd)*60)
+                    var ss = Math.round(((ad - dd) * 60 - mm) * 600) / 10
+
+                    return( [sg, dd, mm, ss ] )
                 },
-                dd: function() {
-                    console.log("parsing dd")
-                    lat = $("#dd-a").val() * $("#dd-a-dd").val()
-                    lon = $("#dd-o").val() * $("#dd-o-dd").val()
-                    console.log("->",lat,lon)
-                    updater.all()
+                makeddm: function(d) {
+                    var sg = Math.sign(d)
+
+                    var ad = Math.abs(d)
+
+                    var dd = Math.trunc(ad)
+                    var mm = Math.round( (ad-dd)*60 * 1000) / 1000
+
+                    return( [sg, dd, mm ] )
+                },
+                makedd: function(d) {
+                    var sg = Math.sign(d)
+                
+                    var ad = Math.abs(d)
+                
+                    var dd = Math.round(ad*100000)/100000
+                
+                    return( [sg, dd] )
+                },
+                makeDMSString: function(dl, nsew) {
+                    var d = this.makedms(dl)
+                    return nsew[d[0]]+" "+d[1]+"°"+d[2]+"'"+d[3]+"\""
+                },
+                makeDDMString: function(dl, nsew) {
+                    var d = this.makeddm(dl)
+                    return nsew[d[0]]+" "+d[1]+"°"+d[2]+"'"
+                },
+                makeDDString: function(dl, nsew) {
+                    var d = this.makedd(dl)
+                    return nsew[d[0]]+" "+d[1]+"°"
                 }
             }
             var updater = {
-                showmis: true,
                 center: true,
                 pad: function(n) {
-                    if (n < 10) { return "0" + n.toString() }
+                    if (n < 10) { return "0" + (1.0*n).toString() }
                     return n.toString()
                 },
-                all: function() {
-                    this.dms()
-                    this.ddm()
-                    this.dd()
-                    if( posMarker.setLatLng ) {
-                        posMarker.setLatLng([lat, lon])
-                    }
-                    if( showmis ) {
-                        this.updateMisMarkers()
-                    }
+                recenter: function() {
                     if( this.center ) {
-                        map.panTo([lat, lon])
+                        var llb = L.latLngBounds([dmsLat, dmsLon], [ddmLat, ddmLon] )
+                        llb.extend( [ddLat, ddLon] )
+                        map.fitBounds(llb)
                     }
+                },
+                all: function() {
+                    this.ds()
+                    this.updateMisMarkers()
+                    this.recenter()
                     updateExportMarkersLink()
                 },
-                updateMisMarkers: function() {
-                    // ds is a digit stream of dms: ddmmss, reinterpreted as as dd mm.mm
-                    var dsLat = $("#dms-a-dd").val()+$("#dms-a-mm").val()+$("#dms-a-ss").val()+"0000"
-                    var dsLon = $("#dms-o-dd").val()+$("#dms-o-mm").val()+$("#dms-o-ss").val()+"0000"
-                    dsLat = dsLat.replace(/[,.]/g,"").substr(0,7)
-                    dsLon = dsLon.replace(/[,.]/g,"").substr(0,7)
+                updateConversions: function() {
+                    /* convert dms to ddm & dd */
+                    dmsLat = $("#dms-a").val() * parser.parsedms( $("#dms-a-dd").val(), $("#dms-a-mm").val(), $("#dms-a-ss").val() )
+                    dmsLon = $("#dms-o").val() * parser.parsedms( $("#dms-o-dd").val(), $("#dms-o-mm").val(), $("#dms-o-ss").val() )
+                    console.log("->", dmsLat, dmsLon)
+                    var lats = parser.makeddm(dmsLat)
+                    var lons = parser.makeddm(dmsLon)
+                    console.log("->", lats, lons)
+                    $("#dms-to-ddm span.value").html(parser.makeDDMString(dmsLat, NS)+" "+parser.makeDDMString(dmsLon, EW))
+                    lats = parser.makedd(dmsLat)
+                    lons = parser.makedd(dmsLon)
+                    console.log("->", lats, lons)
+                    $("#dms-to-dd span.value").html(parser.makeDDString(dmsLat, NS)+" "+parser.makeDDString(dmsLon, EW))
                     
-                    // ... reinterpret as dd mm.mm
-                    var misLat = $("#dms-a").val() * parser.dsddm(dsLat)
-                    var misLon = $("#dms-o").val() * parser.dsddm(dsLon)
-                    misMarkers.dmsddm.setLatLng([misLat, misLon])
-                    
-                    // ... reinterpret as dd.dddd
-                    misLat = $("#dms-a").val() * parser.dsdd(dsLat)
-                    misLon = $("#dms-o").val() * parser.dsdd(dsLon)
-                    console.log("dmsdd:", dsLat, dsLon, misLat, misLon)
-                    misMarkers.dmsdd.setLatLng([misLat, misLon])
-                    
-                    // make a digit stream from ddm
-                    dsLat = $("#ddm-a-dd").val()+$("#ddm-a-mm").val()+"0000"
-                    dsLon = $("#ddm-o-dd").val()+$("#ddm-o-mm").val()+"0000"
-                    dsLat = dsLat.replace(/[,.]/g,"").substr(0,7)
-                    dsLon = dsLon.replace(/[,.]/g,"").substr(0,7)
-                    
-                    // ... reinterpret as dd mm ss
-                    misLat = $("#ddm-a").val() * parser.dsdms(dsLat)
-                    misLon = $("#ddm-o").val() * parser.dsdms(dsLon)
-                    misMarkers.ddmdms.setLatLng([misLat, misLon])
-                    
-                    // ... reinterpret as dd.dddd
-                    misLat = $("#ddm-a").val() * parser.dsdd(dsLat)
-                    misLon = $("#ddm-o").val() * parser.dsdd(dsLon)
-                    console.log("ddmdd:",dsLat, dsLon, misLat, misLon)
-                    misMarkers.ddmdd.setLatLng([misLat, misLon])
-                    
-                    // make a digit stream from dd                                  
-                    dsLat = $("#dd-a-dd").val()+"00000"
-                    dsLon = $("#dd-o-dd").val()+"00000"
-                    dsLat = dsLat.replace(/[,.]/g,"").substr(0,7)
-                    dsLon = dsLon.replace(/[,.]/g,"").substr(0,7)
-                          
-                    // ... reinterpret as dd mm ss
-                    misLat = $("#dd-a").val() * parser.dsdms(dsLat)
-                    misLon = $("#dd-o").val() * parser.dsdms(dsLon)
-                    misMarkers.dddms.setLatLng([misLat, misLon])
-                    
-                    // ... reinterpret as dd mm.mm
-                    var misLat = $("#dd-a").val() * parser.dsddm(dsLat)
-                    var misLon = $("#dd-o").val() * parser.dsddm(dsLon)
-                    misMarkers.ddddm.setLatLng([misLat, misLon])
+                    ddmLat = $("#ddm-a").val() * parser.parseddm( $("#ddm-a-dd").val(), $("#ddm-a-mm").val() )
+                    ddmLon = $("#ddm-o").val() * parser.parseddm( $("#ddm-o-dd").val(), $("#ddm-o-mm").val() )
+                    console.log("->", ddmLat, ddmLon)
+                    $("#ddm-to-dms span.value").html(parser.makeDMSString(ddmLat, NS)+" "+parser.makeDMSString(ddmLon, EW))
+                    lats = parser.makedd(ddmLat)
+                    lons = parser.makedd(ddmLon)
+                    console.log("->", lats, lons)
+                    $("#ddm-to-dd span.value").html(parser.makeDDString(ddmLat, NS)+" "+parser.makeDDString(ddmLon, EW))
 
+                    ddLat = $("#dd-a").val() * parser.parsedd( $("#dd-a-dd").val() )
+                    ddLon = $("#dd-o").val() * parser.parsedd( $("#dd-o-dd").val() )
+                    console.log("->", ddLat, ddLon)
+                    lats = parser.makedms(ddLat)
+                    lons = parser.makedms(ddLon)
+                    console.log("->", lats, lons)
+                    $("#dd-to-dms span.value").html(parser.makeDMSString(ddLat, NS)+" "+parser.makeDMSString(ddLon, EW))
+                    lats = parser.makeddm(ddLat)
+                    lons = parser.makeddm(ddLon)
+                    console.log("->", lats, lons)
+                    $("#dd-to-ddm span.value").html(NS[lats[0]]+" "+lats[1]+"°"+lats[2]+"'"+" "+EW[lons[0]]+" "+lons[1]+"°"+lons[2]+"'")
+                    
+                    this.updateMisMarkers()
+                },
+                updateMisMarkers: function() {
+                    if ( markers.dms.setLatLng ) {
+                        markers.dms.setLatLng([dmsLat, dmsLon])
+                        markers.ddm.setLatLng([ddmLat, ddmLon])
+                        markers.dd.setLatLng([ddLat, ddLon])
+                        
+                        markers.dms.setTooltipContent("<span class='tt dms'>DMS</span> "+parser.makeDMSString(dmsLat, NS)+" "+parser.makeDMSString(dmsLon, EW))
+                        markers.ddm.setTooltipContent("<span class='tt ddm'>DDM</span> "+parser.makeDDMString(ddmLat, NS)+" "+parser.makeDDMString(ddmLon, EW))
+                        markers.dd.setTooltipContent("<span class='tt dd'>DD</span> "+parser.makeDDString(ddLat, NS)+" "+parser.makeDDString(ddLon, EW))
+                        this.recenter()
+                    }
+                },
+                ds: function() {
+                    /* update value fields based on plain digit string */
+                    /* N/S & E/W values */
+                    $("#dms-a").val($("#ds-a").val())
+                    $("#ddm-a").val($("#ds-a").val())
+                    $("#dd-a").val($("#ds-a").val())
+                    $("#dms-o").val($("#ds-o").val())
+                    $("#ddm-o").val($("#ds-o").val())
+                    $("#dd-o").val($("#ds-o").val())
+
+                    /* reinterpret latitude digit stream as DMS, DDM, and DD */
+                    var ds = $("#ds-a-nn").val()
+                    var dms = parser.splitDStoDMS(ds+"0000000")
+                    var ddm = parser.splitDStoDDM(ds+"0000000")
+                    var dd = parser.splitDStoDD(ds+"0000000")
+                    
+                    $("#dms-a-dd").val(this.pad(dms[0]))
+                    $("#dms-a-mm").val(this.pad(dms[1]))
+                    $("#dms-a-ss").val(this.pad(dms[2]))
+                    
+                    $("#ddm-a-dd").val(this.pad(ddm[0]))
+                    $("#ddm-a-mm").val(this.pad(ddm[1]))
+
+                    $("#dd-a-dd").val(this.pad(dd))
+
+                    /* reinterpret longitude digit stream as DMS, DDM, and DD */
+                    ds = $("#ds-o-nn").val()
+                    dms = parser.splitDStoDMS(ds+"0000000")
+                    ddm = parser.splitDStoDDM(ds+"0000000")
+                    dd = parser.splitDStoDD(ds+"0000000")
+                    
+                    $("#dms-o-dd").val(this.pad(dms[0]))
+                    $("#dms-o-mm").val(this.pad(dms[1]))
+                    $("#dms-o-ss").val(this.pad(dms[2]))
+                    
+                    $("#ddm-o-dd").val(this.pad(ddm[0]))
+                    $("#ddm-o-mm").val(this.pad(ddm[1]))
+                    
+                    $("#dd-o-dd").val(this.pad(dd))
+
+                    this.updateConversions()
                 },
                 dms: function() {
-                    $("#dms-a").val(Math.sign(lat))
-                    $("#dms-o").val(Math.sign(lon))
-                    var alat = Math.abs(lat)
-                    var alon = Math.abs(lon)
-                    
-                    var dd = Math.trunc(alat)
-                    var mm = Math.trunc((alat-dd)*60)
-                    var ss = Math.round(((alat - dd) * 60 - mm) * 600) / 10
-                    $("#dms-a-dd").val(this.pad(dd))
-                    $("#dms-a-mm").val(this.pad(mm))
-                    $("#dms-a-ss").val(this.pad(ss))
-                    
-                    dd = Math.trunc(alon)
-                    mm = Math.trunc((alon-dd)*60)
-                    ss = Math.round(((alon - dd) * 60 - mm) * 600) / 10
-                    
-                    $("#dms-o-dd").val(this.pad(dd))
-                    $("#dms-o-mm").val(this.pad(mm))
-                    $("#dms-o-ss").val(this.pad(ss))
+                    /* make digit stream from values, then trigger update via ds */
+                    $("#ds-a").val($("#dms-a").val())
+                    $("#ds-o").val($("#dms-o").val())
+
+                    var dsLat = this.pad($("#dms-a-dd").val())+this.pad($("#dms-a-mm").val())+this.pad($("#dms-a-ss").val())+"0000"
+                    var dsLon = this.pad($("#dms-o-dd").val())+this.pad($("#dms-o-mm").val())+this.pad($("#dms-o-ss").val())+"0000"
+                    dsLat = dsLat.replace(/[,.]/g,"").substr(0,7)
+                    dsLon = dsLon.replace(/[,.]/g,"").substr(0,7)
+                    $("#ds-a-nn").val(dsLat)
+                    $("#ds-o-nn").val(dsLon)
+
+                    this.ds()
+
                 },
                 ddm: function() {
-                    $("#ddm-a").val(Math.sign(lat))
-                    $("#ddm-o").val(Math.sign(lon))
-                    var alat = Math.abs(lat)
-                    var alon = Math.abs(lon)
-                    
-                    var dd = Math.trunc(alat)
-                    var mm = Math.round( (alat-dd)*60 * 1000) / 1000
-                    $("#ddm-a-dd").val(this.pad(dd))
-                    $("#ddm-a-mm").val(this.pad(mm))
+                    /* make digit stream from values, then trigger update via ds */
+                    $("#ds-a").val($("#ddm-a").val())
+                    $("#ds-o").val($("#ddm-o").val())
 
-                    var dd = Math.trunc(alon)
-                    var mm = Math.round( (alon-dd)*60 * 1000) / 1000
-                    $("#ddm-o-dd").val(this.pad(dd))
-                    $("#ddm-o-mm").val(this.pad(mm))
+                    var dsLat = this.pad($("#ddm-a-dd").val())+this.pad($("#ddm-a-mm").val())+"0000"
+                    var dsLon = this.pad($("#ddm-o-dd").val())+this.pad($("#ddm-o-mm").val())+"0000"
+                    dsLat = dsLat.replace(/[,.]/g,"").substr(0,7)
+                    dsLon = dsLon.replace(/[,.]/g,"").substr(0,7)
+                    $("#ds-a-nn").val(dsLat)
+                    $("#ds-o-nn").val(dsLon)
+                    
+                    this.ds()
+                    
+                    
                 },
                 dd: function() {
-                    $("#dd-a").val(Math.sign(lat))
-                    $("#dd-o").val(Math.sign(lon))
+                    /* make digit stream from values, then trigger update via ds */
+                    $("#ds-a").val($("#dd-a").val())
+                    $("#ds-o").val($("#dd-o").val())
                     
-                    var alat = Math.abs(lat)
-                    var alon = Math.abs(lon)
+                    var dsLat = this.pad($("#dd-a-dd").val())+"0000"
+                    var dsLon = this.pad($("#dd-o-dd").val())+"0000"
+                    dsLat = dsLat.replace(/[,.]/g,"").substr(0,7)
+                    dsLon = dsLon.replace(/[,.]/g,"").substr(0,7)
+                    $("#ds-a-nn").val(dsLat)
+                    $("#ds-o-nn").val(dsLon)
                     
-                    var dd = Math.round(alat * 100000) / 100000
-                    $("#dd-a-dd").val(this.pad(dd))
-                    dd = Math.round(alon * 100000) / 100000
-                    $("#dd-o-dd").val(this.pad(dd))
+                    this.ds()
                 }
             }
             
@@ -310,13 +419,9 @@
                 xml = xml + ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'
                 xml = xml + ' xmlns="http://www.topografix.com/GPX/1/1"'
                 xml = xml + ' xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">'
-                xml = xml + makeWpt( posMarker, "Actual", "Position as entered" )
-                xml = xml + makeWpt( misMarkers.dmsddm, "DMS as DDM", "Position was given in DMS but entered as DDM" )
-                xml = xml + makeWpt( misMarkers.dmsdd, "DMS as DD", "Position was given in DMS but entered as DD" )
-                xml = xml + makeWpt( misMarkers.ddmdms, "DDM as DMS", "Position was given in DDM but entered as DMS" )
-                xml = xml + makeWpt( misMarkers.ddmdd, "DDM as DD", "Position was given in DDM but entered as DD" )
-                xml = xml + makeWpt( misMarkers.dddms, "DD as DMS", "Position was given in DD but entered as DMS" )
-                xml = xml + makeWpt( misMarkers.ddddm, "DD as DDM", "Position was given in DD but entered as DDM" )
+                xml = xml + makeWpt( markers.dms, "DMS", "Position was given in DMS" )
+                xml = xml + makeWpt( markers.ddm, "DDM", "Position was given in DDM" )
+                xml = xml + makeWpt( markers.dd, "DD", "Position was given in DD" )
                 xml = xml + '</gpx>'
                 
                 $("#gpx-export").attr("href", 'data:text/xml;charset=utf-8,' + encodeURIComponent(xml))
@@ -326,6 +431,18 @@
                 if( position ) {
                     lat = position.coords.latitude
                     lon = position.coords.longitude
+                    
+                    var dsLat = lat.toString()+",000000"
+                    var dsLon = lon.toString()+",000000"
+                    dsLat = dsLat.replace(/[,.]/g,"").substr(0,7)
+                    dsLon = dsLon.replace(/[,.]/g,"").substr(0,7)
+                    $("#ds-a").val(Math.sign(lat))
+                    $("#ds-o").val(Math.sign(lon))
+                    $("#ds-a-nn").val(Math.abs(dsLat))
+                    $("#ds-o-nn").val(Math.abs(dsLon))
+                    
+                    updater.ds()
+                    
                 }
                 map = L.map('map').setView([lat, lon], 13)
                 var lmi = L.tileLayer('https://maps.stepman.is/cache/wmts/LMI_DEM/webmercator/{z}/{x}/{y}.jpeg', {
@@ -339,26 +456,23 @@
                 otm.addTo(map)
                 L.control.layers({"LMÍ Topo": lmi, "OpenTopoMap": otm}).addTo(map)
                 L.control.scale().addTo(map)
-                posMarker = L.marker([lat, lon], { title: "Specified Position"})
                 var icon = L.icon({ 
                     iconUrl: "media/Marker-Icon-Red.png",
                     iconRetinaUrl: "media/Marker-Icon-Red-2x.png",
                     iconSize: [25, 41],
                     iconAnchor: [12, 41],
                  })
-                misMarkers.dmsddm = L.marker( [0,0], { icon: icon, title: "dd°mm'ss\" as dd° mm.mmm'"})
-                misMarkers.dmsdd  = L.marker( [0,0], { icon: icon, title: "dd°mm'ss\" as dd.dddd°"})
-                misMarkers.ddmdms = L.marker( [0,0], { icon: icon, title: "dd° mm.mmm' as dd°mm'ss\""})
-                misMarkers.ddmdd  = L.marker( [0,0], { icon: icon, title: "dd° mm.mmm' as dd.dddd°"})
-                misMarkers.dddms  = L.marker( [0,0], { icon: icon, title: "dd.dddd° as dd°mm'ss\""})
-                misMarkers.ddddm  = L.marker( [0,0], { icon: icon, title: "dd.dddd° as dd° mm.mmm'"})
-                misMarkers.dmsddm.addTo(map)
-                misMarkers.dmsdd.addTo(map)
-                misMarkers.ddmdms.addTo(map)
-                misMarkers.ddmdd.addTo(map)
-                misMarkers.dddms.addTo(map)
-                misMarkers.ddddm.addTo(map)
-                posMarker.addTo(map)
+                markers.dms = L.marker( [0,0], { title: "dd°mm'ss.s\""})
+                markers.ddm  = L.marker( [0,0], { title: "dd°mm.mmmm'"})
+                markers.dd = L.marker( [0,0], { title: "dd.ddddd°"})
+                
+                markers.dms.addTo(map)
+                markers.ddm.addTo(map)
+                markers.dd.addTo(map)
+                
+                markers.dms.bindTooltip("Numbers are DMS", { permanent: true }).openTooltip();
+                markers.ddm.bindTooltip("Numbers are DDM", { permanent: true }).openTooltip();
+                markers.dd.bindTooltip("Numbers are DD", { permanent: true }).openTooltip();
                 updater.all()
             }
             if (navigator.geolocation) {
@@ -371,28 +485,9 @@
                     updater.center = this.checked
                     console.log("center -> ",updater.center)
                     updater.all()
-                } else if( this.id == "showmis") {
-                    updater.showmis = this.checked
-                    if( updater.showmis ) {
-                        misMarkers.dmsddm.addTo(map)
-                        misMarkers.dmsdd.addTo(map)
-                        misMarkers.ddmdms.addTo(map)
-                        misMarkers.ddmdd.addTo(map)
-                        misMarkers.dddms.addTo(map)
-                        misMarkers.ddddm.addTo(map)
-                    } else {
-                        misMarkers.dmsddm.removeFrom(map)
-                        misMarkers.dmsdd.removeFrom(map)
-                        misMarkers.ddmdms.removeFrom(map)
-                        misMarkers.ddmdd.removeFrom(map)
-                        misMarkers.dddms.removeFrom(map)
-                        misMarkers.ddddm.removeFrom(map)
-
-                    }
-                    updater.all()
                 } else {
                     var mode = this.parentNode.parentNode.id
-                    parser[mode]()
+                    updater[mode]()
                 }
             })
         </script>
