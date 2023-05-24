@@ -429,22 +429,21 @@
             
             function bootstrap(position) {
                 if( position ) {
-                    lat = position.coords.latitude
-                    lon = position.coords.longitude
+                    ddLat = position.coords.latitude
+                    ddLon = position.coords.longitude
                     
-                    var dsLat = lat.toString()+",000000"
-                    var dsLon = lon.toString()+",000000"
+                    var dsLat = ddLat.toString()+",000000"
+                    var dsLon = ddLon.toString()+",000000"
                     dsLat = dsLat.replace(/[,.]/g,"").substr(0,7)
                     dsLon = dsLon.replace(/[,.]/g,"").substr(0,7)
-                    $("#ds-a").val(Math.sign(lat))
-                    $("#ds-o").val(Math.sign(lon))
+                    $("#ds-a").val(Math.sign(ddLat))
+                    $("#ds-o").val(Math.sign(ddLon))
                     $("#ds-a-nn").val(Math.abs(dsLat))
                     $("#ds-o-nn").val(Math.abs(dsLon))
                     
                     updater.ds()
-                    
                 }
-                map = L.map('map').setView([lat, lon], 13)
+                map = L.map('map').setView([ddLat, ddLon], 13)
                 var lmi = L.tileLayer('https://maps.stepman.is/cache/wmts/LMI_DEM/webmercator/{z}/{x}/{y}.jpeg', {
                     maxZoom: 19,
                     attribution: '&copy; <a href="http://www.lmi.is">Landmælingar Íslands</a>'
@@ -470,12 +469,58 @@
                 markers.ddm.addTo(map)
                 markers.dd.addTo(map)
                 
-                markers.dms.bindTooltip("Numbers are DMS", { permanent: true }).openTooltip();
-                markers.ddm.bindTooltip("Numbers are DDM", { permanent: true }).openTooltip();
-                markers.dd.bindTooltip("Numbers are DD", { permanent: true }).openTooltip();
+                markers.dms.bindTooltip("Numbers are DMS", { permanent: true }).openTooltip()
+                markers.ddm.bindTooltip("Numbers are DDM", { permanent: true }).openTooltip()
+                markers.dd.bindTooltip("Numbers are DD", { permanent: true }).openTooltip()
                 updater.all()
             }
-            if (navigator.geolocation) {
+            // see if we have lon, lat in hash
+            const parsedHash = new URLSearchParams(
+              window.location.hash.substring(1) // any_hash_key=any_value
+            );
+            
+            var haveHash = false
+            if (parsedHash.get("lat") && parsedHash.get("lon")) {
+                
+                var parseRegex = function(m) {
+                    if ( !m ) { return undefined }
+                    var q = m[1]
+                    var deg = m[2]
+                    
+                    if(!q) {
+                        q = m[3]
+                        deg = m[4]
+                    }
+                    
+                    if ((q == "N" )|| (q == "E")) {
+                        q = 1;
+                    } else {
+                        q = -1;
+                    }
+                    
+                    return [ q, deg ]
+                }
+                // lat, lon are 6-7 digit numbers either prefixed or postfixed with NSEW
+                const regex = /(?:([NSEW])(\d\d\d\d\d\d\d?))|(?:(\d\d\d\d\d\d\d?)([NSEW]))/
+                var reLat = parseRegex( regex.exec(parsedHash.get("lat")) )
+                var reLon = parseRegex( regex.exec(parsedHash.get("lon")) )
+                if ( reLat && reLon ) {
+                    haveHash = true
+                    console.log(reLat, reLon )
+                    
+                    var dsLat = reLat[1].toString()+",000000"
+                    var dsLon = reLon[1].toString()+",000000"
+                    dsLat = dsLat.replace(/[,.]/g,"").substr(0,7)
+                    dsLon = dsLon.replace(/[,.]/g,"").substr(0,7)
+                    $("#ds-a").val(Math.sign(reLat[0]))
+                    $("#ds-o").val(Math.sign(reLon[0]))
+                    $("#ds-a-nn").val(Math.abs(dsLat))
+                    $("#ds-o-nn").val(Math.abs(dsLon))
+                    
+                    updater.ds()
+                }
+            }
+            if (!haveHash && navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(bootstrap)
             } else {
                 bootstrap()
