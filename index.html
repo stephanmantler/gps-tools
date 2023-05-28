@@ -5,6 +5,7 @@
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin="" />
         <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
         <script src="https://code.jquery.com/jquery-3.7.0.slim.js" integrity="sha256-7GO+jepT9gJe9LB4XFf8snVOjX3iYNb0FHYr5LI1N5c=" crossorigin="anonymous"></script>
+        <script src="https://assets.what3words.com/sdk/v3/what3words.js?key=API_KEY"></script>
         <style>
             html, body {
                 height: 100%;
@@ -124,6 +125,7 @@
                     <div class="conversions">
                         <div id="dms-to-ddm">.. as <span class="ddm">DDM</span>:<span class="value ddm"></span></div>
                         <div id="dms-to-dd">.. as <span class="dd">DD</span>:<span class="value dd"></span></div>
+                        <div id="dms-to-w3w">.. as <span class="w3w">W3W</span>:<span class="value w3w"></span></div>
                     </div>
                 </div>
                 <div id="ddm" class="ddm gcs"><h2><span class="tt">DDM</span> - Degrees / Decimal Minutes</h2>
@@ -140,6 +142,7 @@
                     <div class="conversions">
                         <div id="ddm-to-dms">.. as <span class="dms">DMS</span>:<span class="dms value"></span></div>
                         <div id="ddm-to-dd">.. as <span class="dd">DD</span>:<span class="dd value"></span></div>
+                        <div id="ddm-to-w3w">.. as <span class="w3w">W3W</span>:<span class="value w3w"></span></div>
                     </div>
                 </div>
                 <div id="dd" class="dd gcs"><h2><span class="tt">DD</span> - Decimal Degrees</h2>
@@ -154,10 +157,11 @@
                     <div class="conversions">
                         <div id="dd-to-dms">.. as <span class="dms">DMS</span>:<span class="dms value"></span></div>
                         <div id="dd-to-ddm">.. as<span class="ddm"> DDM</span>:<span class="ddm value"></span></div>
+                        <div id="dd-to-w3w">.. as <span class="w3w">W3W</span>:<span class="value w3w"></span></div>
                     </div>
                 </div>
                 <div class="gcs options">
-                    <label for="center">Keep map focused on all possible locations</label><input style="float: right" id="center" checked type="checkbox"><br />
+                    <label for="center">Keep map focused on all possible locations</label><input style="float: right" id="center"  type="checkbox"><br />
                     <a id="gpx-export" href="#" download="export.gpx">Export as GPX (testing)</a>
                 </div>
             </div>
@@ -247,7 +251,7 @@
                 }
             }
             var updater = {
-                center: true,
+                center: false,
                 pad: function(n) {
                     if (n < 10) { return "0" + (1.0*n).toString() }
                     return n.toString()
@@ -279,6 +283,11 @@
                     console.log("->", lats, lons)
                     $("#dms-to-dd span.value").html(parser.makeDDString(dmsLat, NS)+" "+parser.makeDDString(dmsLon, EW))
                     
+                    what3words.api.convertTo3wa({lat:dmsLat, lng:dmsLon}, 'en')
+                      .then(function(response) {
+                        $("#dms-to-w3w span.value").html('<a href="'+response.map+'">'+response.words+"</a>")
+                      })
+                    
                     ddmLat = $("#ddm-a").val() * parser.parseddm( $("#ddm-a-dd").val(), $("#ddm-a-mm").val() )
                     ddmLon = $("#ddm-o").val() * parser.parseddm( $("#ddm-o-dd").val(), $("#ddm-o-mm").val() )
                     console.log("->", ddmLat, ddmLon)
@@ -288,6 +297,11 @@
                     console.log("->", lats, lons)
                     $("#ddm-to-dd span.value").html(parser.makeDDString(ddmLat, NS)+" "+parser.makeDDString(ddmLon, EW))
 
+                    what3words.api.convertTo3wa({lat:ddmLat, lng:ddmLon}, 'en')
+                      .then(function(response) {
+                        $("#ddm-to-w3w span.value").html('<a href="'+response.map+'">'+response.words+"</a>")
+                      })
+                    
                     ddLat = $("#dd-a").val() * parser.parsedd( $("#dd-a-dd").val() )
                     ddLon = $("#dd-o").val() * parser.parsedd( $("#dd-o-dd").val() )
                     console.log("->", ddLat, ddLon)
@@ -299,6 +313,11 @@
                     lons = parser.makeddm(ddLon)
                     console.log("->", lats, lons)
                     $("#dd-to-ddm span.value").html(NS[lats[0]]+" "+lats[1]+"°"+lats[2]+"'"+" "+EW[lons[0]]+" "+lons[1]+"°"+lons[2]+"'")
+
+                    what3words.api.convertTo3wa({lat:ddLat, lng:ddLon}, 'en')
+                      .then(function(response) {
+                        $("#dd-to-w3w span.value").html('<a href="'+response.map+'">'+response.words+"</a>")
+                      })
                     
                     this.updateMisMarkers()
                 },
@@ -313,6 +332,23 @@
                         markers.dd.setTooltipContent("<span class='tt dd'>DD</span> "+parser.makeDDString(ddLat, NS)+" "+parser.makeDDString(ddLon, EW))
                         this.recenter()
                     }
+                },
+                updateHash: function() {
+                    // history.replaceState(null, null, "") 
+                    var data = [
+                        "lat="+NS[$("#ds-a").val()]+$("#ds-a-nn").val(),
+                        "lon="+EW[$("#ds-o").val()]+$("#ds-o-nn").val()                       
+                    ]
+                    if ( map && map.getCenter ) {
+                        var mc = map.getCenter()
+                        data.push(
+                           "mlat="+mc.lat,
+                           "mlon="+mc.lng,
+                           "mz="+map.getZoom()
+                        )
+                    }
+                   
+                   window.location.hash = data.join("&")
                 },
                 ds: function() {
                     /* update value fields based on plain digit string */
@@ -355,6 +391,7 @@
                     $("#dd-o-dd").val(this.pad(dd))
 
                     this.updateConversions()
+                    this.updateHash()
                 },
                 dms: function() {
                     /* make digit stream from values, then trigger update via ds */
@@ -427,7 +464,7 @@
                 $("#gpx-export").attr("href", 'data:text/xml;charset=utf-8,' + encodeURIComponent(xml))
             }
             
-            function bootstrap(position) {
+            function bootstrap(position, mapPos) {
                 if( position ) {
                     ddLat = position.coords.latitude
                     ddLon = position.coords.longitude
@@ -443,7 +480,26 @@
                     
                     updater.ds()
                 }
-                map = L.map('map').setView([ddLat, ddLon], 13)
+                // see if we have map params
+                
+                if ( !mapPos ) {
+                    mapPos = { "pos": [ ddLat, ddLon ], "zoom": 13 }
+                }
+                map = L.map('map').setView(mapPos.pos, mapPos.zoom)
+                
+                map.on("zoomend", updater.updateHash)
+                map.on("moveend", updater.updateHash)
+
+                /*
+                var nexrad = L.tileLayer.wms("https://gis.lmi.is/geoserver/wms", {
+                    layers: 'IS_50V:haedarlinur',
+                    format: 'image/png',
+                    transparent: true,
+                    styles: 'IS_50V:LMI IS 50V haedarlinur',
+                    attribution: '&copy; <a href="http://www.lmi.is">Landmælingar Íslands</a>'
+                })
+                nexrad.addTo(map)
+                */
                 var lmi = L.tileLayer('https://maps.stepman.is/cache/wmts/LMI_DEM/webmercator/{z}/{x}/{y}.jpeg', {
                     maxZoom: 19,
                     attribution: '&copy; <a href="http://www.lmi.is">Landmælingar Íslands</a>'
@@ -480,6 +536,10 @@
             );
             
             var haveHash = false
+            var mapPos = undefined
+            if (parsedHash.get("mlat") && parsedHash.get("mlon") && parsedHash.get("mz")) {
+                mapPos = { pos: [ parsedHash.get("mlat"), parsedHash.get("mlon")], zoom: parsedHash.get("mz") }
+            }
             if (parsedHash.get("lat") && parsedHash.get("lon")) {
                 
                 var parseRegex = function(m) {
@@ -521,14 +581,13 @@
                 }
             }
             if (!haveHash && navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(bootstrap)
+                navigator.geolocation.getCurrentPosition(bootstrap, mapPos)
             } else {
-                bootstrap()
+                bootstrap(undefined, mapPos)
             }
-            $("select, input").change( function() {
+            $("#coords-calculator select, #coords-calculator input").change( function() {
                 if( this.id == "center") {
                     updater.center = this.checked
-                    console.log("center -> ",updater.center)
                     updater.all()
                 } else {
                     var mode = this.parentNode.parentNode.id
